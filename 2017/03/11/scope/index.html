@@ -1,0 +1,811 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="javascript,作用域,scope,词法,规则," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="前言几乎所有语言都包含作用域概念，除开一些计算机发展史上早期的语言。看见作用域是多么重要，但是很多语言相关的书籍都没有将作用域当成最重要的部分来讲解。也就导致了现在很多半吊子程序员很多。因为他们不了解作用域是多么重要。因为作用域可以说是一门语言从编写到运行整个过程中最基本的一套规则。当然也可能是写书的作者本身就是个半吊子。不能给清楚的洞察语言本身的运行机制。了解一门语言之前，除开要知道这门语言本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我所理解的作用域(Javascript)">
+<meta property="og:url" content="http://www.mchen.info/2017/03/11/scope/index.html">
+<meta property="og:site_name" content="老陈博客">
+<meta property="og:description" content="前言几乎所有语言都包含作用域概念，除开一些计算机发展史上早期的语言。看见作用域是多么重要，但是很多语言相关的书籍都没有将作用域当成最重要的部分来讲解。也就导致了现在很多半吊子程序员很多。因为他们不了解作用域是多么重要。因为作用域可以说是一门语言从编写到运行整个过程中最基本的一套规则。当然也可能是写书的作者本身就是个半吊子。不能给清楚的洞察语言本身的运行机制。了解一门语言之前，除开要知道这门语言本">
+<meta property="og:image" content="http://www.mchen.info/upload/2017/03/scope.jpg">
+<meta property="og:updated_time" content="2017-03-10T09:57:05.822Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="我所理解的作用域(Javascript)">
+<meta name="twitter:description" content="前言几乎所有语言都包含作用域概念，除开一些计算机发展史上早期的语言。看见作用域是多么重要，但是很多语言相关的书籍都没有将作用域当成最重要的部分来讲解。也就导致了现在很多半吊子程序员很多。因为他们不了解作用域是多么重要。因为作用域可以说是一门语言从编写到运行整个过程中最基本的一套规则。当然也可能是写书的作者本身就是个半吊子。不能给清楚的洞察语言本身的运行机制。了解一门语言之前，除开要知道这门语言本">
+<meta name="twitter:image" content="http://www.mchen.info/upload/2017/03/scope.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.mchen.info/2017/03/11/scope/"/>
+
+
+
+
+
+  <title> 我所理解的作用域(Javascript) | 老陈博客 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">老陈博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Begin Again</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oldblog">
+          <a href="http://blog.mchen.info" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-paw"></i> <br />
+            
+            旧博客
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-link"></i> <br />
+            
+            友链
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://www.mchen.info/2017/03/11/scope/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Viger">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="老陈博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                我所理解的作用域(Javascript)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-11T00:00:00+08:00">
+                2017-03-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/javascript/" itemprop="url" rel="index">
+                    <span itemprop="name">javascript</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/11/scope/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/03/11/scope/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <span itemprop="image" itemscope="" itemtype="http://schema.org/ImageObject"><img itemprop="url image" src="/upload/2017/03/scope.jpg" class="full-image" alt="作用域"><meta itemprop="width" content="auto"><meta itemprop="height" content="auto"></span>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>几乎所有语言都包含作用域概念，除开一些计算机发展史上早期的语言。<br>看见作用域是多么重要，但是很多语言相关的书籍都没有将作用域当成最重要的部分来讲解。<br>也就导致了现在很多半吊子程序员很多。因为他们不了解作用域是多么重要。<br>因为作用域可以说是一门语言从编写到运行整个过程中最基本的一套规则。当然也可能是写书的作者本身就是个半吊子。不能给清楚的洞察语言本身的运行机制。<br>了解一门语言之前，除开要知道这门语言本身有什么特点，更重要的是要了解其底层执行的机制。<br>了解<strong>作用域</strong>是多么的重要，请不要忽视它。<br>现在很多程序员不会去思考语言本身，而仅仅浮于表面，只会使用（身边不乏这样的人）。<br>在学习一门语言之前，建议最好搞清楚以下几个问题：<a id="more"></a></p>
+<ul>
+<li>我为什么要学这么语言?(因为大家都在学，这样想法的人，我劝你早点放弃。)</li>
+<li>这门语言被设计出来为了解决什么问题？</li>
+<li>这么语言与其它语言有什么不同？</li>
+<li>这门语言能够在怎样的环境中运行?</li>
+<li>这门语言本身有什么特点?</li>
+<li>这门语言的规则是什么?</li>
+<li>这门语言运行机制是什么?(这个似乎比较难，但是现在网络这么发达，信息量如此之大，难道还找不到？<a href="http://www.google.com" target="_blank" rel="external">谷歌</a>会吧?不行可以去<a href="http://www.stackoverflow.com" target="_blank" rel="external">stackoverflow</a>提问，我相信会有很多热心的网友给你满意的答复的。别TMD给我扯百度。)</li>
+</ul>
+<p>如果这几个问题没有搞清楚之前，你学什么都是白学。因为你根本不可能学精。</p>
+<h2 id="作用域是什么"><a href="#作用域是什么" class="headerlink" title="作用域是什么?"></a>作用域是什么?</h2><p>有意思的是，搞了这么多年程序开发。一直没搞清楚我到底在做什么？直到最近几年我才恍然大悟，原来我们一直在搞事情(-v-数据)。<br>虽然有点晚，但是好在搞清楚了。有点笨(^-^)<br>写一个程序其实就是用合理的算法去搞一堆数据。(算法与数据结构一定要学好)</p>
+<ul>
+<li>如何搞这些数据？<br>当然是用各种算法来搞这些数据啦，普通的就是加，减，乘，除。难点无非是排序啦什么的。没有那么神奇的东西。<br>在此我们不得不去感谢那些数学先驱们,比如(<a href="https://zh.wikipedia.org/wiki/%E8%90%8A%E6%98%82%E5%93%88%E5%BE%B7%C2%B7%E6%AD%90%E6%8B%89" target="_blank" rel="external">莱昂哈德·欧拉</a>,<a href="https://zh.wikipedia.org/wiki/%E7%BA%A6%E7%91%9F%E5%A4%AB%C2%B7%E5%82%85%E9%87%8C%E5%8F%B6" target="_blank" rel="external">约瑟夫·傅里叶</a>, <a href="https://zh.wikipedia.org/wiki/%E5%8D%A1%E7%88%BE%C2%B7%E5%BC%97%E9%87%8C%E5%BE%B7%E9%87%8C%E5%B8%8C%C2%B7%E9%AB%98%E6%96%AF" target="_blank" rel="external">约翰·卡尔·弗里德里希·高斯</a>,<a href="https://zh.wikipedia.org/wiki/%E8%AF%BA%E5%A7%86%C2%B7%E4%B9%94%E5%A7%86%E6%96%AF%E5%9F%BA" target="_blank" rel="external">诺姆·乔姆斯基</a>),没有这些人，我们今天还都在玩能吃的苹果。</li>
+<li>这些数据在哪里？<br>数据保存在硬盘，内存，寄存器，还是其他地方。我们通通把这些地方叫做数据存储的介质。这时候就涉及一个问题了，我们怎样保持这些数据，怎样获取这些数据。<br>上个世纪，计算机刚刚起步的时候，我们的程序算法和数据都是通过打孔来运算的。</li>
+</ul>
+<p><em>撸主偏题了。</em><br>程序运行的时候会将这些数据中的一部分（需要的）暂时保存在寄存器(CPU)或者内存中，那么它们应该保存在什么位置？什么时候被清除(比较我们的寄存器和内存只有那么大)?<br>这些都需要建立一套规则来让计算机知道。<br><strong>作用域就是一套保存数据的规则。</strong></p>
+<h2 id="Javascript的作用域"><a href="#Javascript的作用域" class="headerlink" title="Javascript的作用域"></a>Javascript的作用域</h2><p>javascript作用域大致分为以下几个部分:</p>
+<ul>
+<li>全局作用域</li>
+<li>函数内部作用域</li>
+<li>类内部作用域(<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-class-definitions" target="_blank" rel="external">ECMAScript 6</a>)</li>
+<li>块内作用域<br>基本上所有变量都会安分的呆在自己所在作用域的内，除了个别不安分的（后面会讲到）。<br>程序在运行一段时间后会发起一个短暂的内存回收工作(java可能会比较长)，这个时候会把某个不再使用的域内的变量都会回收掉。<h3 id="全局作用域"><a href="#全局作用域" class="headerlink" title="全局作用域"></a>全局作用域</h3>全局作用域，顾名思义就是那个在最顶层，高高在上的家伙，程序的任何角落都能获取和修改的域。<br>全局作用域包含所有下层域。下层域可以引用全局域中的数据变量，而全局域却不能去获取下层域的变量。对啊-它就是那么无私。<br>如果下层域声明了一个和全局域一模一样的变量，那么对不起你只能通过其他方式来获取全局域的变量了。比如:<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * 全局域被遮罩</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">DoSomething</span>(<span class="params"></span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">var</span> beMaskVar = <span class="number">2</span>;</div><div class="line">  <span class="built_in">console</span>.log(beMaskVar); <span class="comment">// 2</span></div><div class="line">  <span class="built_in">console</span>.log(<span class="built_in">window</span>.beMaskVar); <span class="comment">// 1</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> beMaskVar = <span class="number">1</span>;</div><div class="line"></div><div class="line">DoSomething();</div></pre></td></tr></table></figure>
+这个就是全局域<strong>被遮罩</strong>。<br>为什么会出现这样的效果呢？<br>因为javascript引擎是自下而上(自内而外)从作用域查找变量的，如果在内部找到某个变量，那么引擎取到这个变量值之后（RHS）就开始执行下一个动作了，并不用一直向上（外）继续查找。如果要引用上次变量，那么久需要通过其他手段获取，全局变量还可以用<em>window</em>来获取，如果是函数（除开函数表达式）可能真就找不到了。<br>不是所有变量都应该声明在全局。因为:<ul>
+<li>GC不知道到底什么时候去回收</li>
+<li>违反了最小权限原则</li>
+</ul>
+</li>
+</ul>
+<blockquote><p>从ECMAscript 5标准发布开始，javascript多了一种严格模式(<em>use strict</em>), 这种模式和非严格模式最大的不同在于，引擎在搜索变量至最顶层(全局域)任然没有找到变量之后的操作方式不一样。运行在非严格模式下引擎会自动给你创建一个变量，而严格模式下会抛出ReferenceError</p>
+</blockquote>
+<h3 id="函数作用域"><a href="#函数作用域" class="headerlink" title="函数作用域"></a>函数作用域</h3><p>函数作用域即是在函数内部的作用域。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">ScopeFun</span>(<span class="params">innerVar</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> funVar = <span class="number">5</span>;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'innerVar + funVar = '</span>, (innerVar + funVar)); <span class="comment">// innerVar + funVar = 100</span></div><div class="line">&#125;</div><div class="line"></div><div class="line">ScopeFun(<span class="number">95</span>);</div></pre></td></tr></table></figure><br>当这个函数执行完成或者不在被外部其他作用域应用的时候(闭包)，函数内部的变量就会被标记为回收等待被回收。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> closure = &#123;&#125;;</div><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params">c</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> funVar = <span class="number">5</span>; <span class="comment">//这个变量不会被回收</span></div><div class="line">    c.Add = <span class="function"><span class="keyword">function</span>(<span class="params">outVar</span>)</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'outVar + funVar = '</span>, (outVar + funVar)); <span class="comment">// innerVar + funVar = 100</span></div><div class="line">    &#125;;</div><div class="line">&#125;(closure));</div><div class="line"></div><div class="line">closure.Add(<span class="number">95</span>);</div></pre></td></tr></table></figure><br>这个就是一个简单的<strong>闭包</strong>，后里面的会专门针对<strong>闭包</strong>写一篇文章。<br><blockquote><p>当函数记住并可以引用所在词法作用域时就产生了闭包，并且该函数可以在词法作用域外被执行。</p>
+</blockquote></p>
+<h3 id="类作用域"><a href="#类作用域" class="headerlink" title="类作用域"></a>类作用域</h3><p>类的概念是在2015年6月发布的<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-class-definitions" target="_blank" rel="external">ECMAScript 6</a>标准之后才被引入的。<br>首先，我们先来了解一下类:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Animal</span> </span>&#123;</div><div class="line">  <span class="keyword">constructor</span>(name) &#123;</div><div class="line">        <span class="keyword">this</span>.name = name;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  SayHi(someOne) &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'hi.'</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> <span class="keyword">extends</span> <span class="title">Animal</span></span>&#123;</div><div class="line">    SayHi(someOne) &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'hi '</span> + someOne + <span class="string">', i am '</span> + <span class="keyword">this</span>.name + <span class="string">'.'</span> );</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> ps = <span class="keyword">new</span> Person(<span class="string">'tom'</span>);</div><div class="line">ps.SayHi(<span class="string">'peter'</span>); <span class="comment">// hi peter, i am tom.</span></div></pre></td></tr></table></figure><br>是不是和其他语言声明一个类类似？<strong>是</strong>。<br><em>this</em>关键字将类内部变量作用域串连起来，所有内部变量均可通过此引用或赋值。</p>
+<h3 id="块作用域"><a href="#块作用域" class="headerlink" title="块作用域"></a>块作用域</h3><p>有时候我们需要在某个全局作用域或函数作用域内搞一个内部块状作用域。<br>比如:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">j</span>) </span>&#123;</div><div class="line">  i = <span class="number">2</span>;</div><div class="line">  <span class="built_in">console</span>.log(j, j * i);</div><div class="line">&#125;</div><div class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) &#123;</div><div class="line">  add(i);</div><div class="line">&#125;</div></pre></td></tr></table></figure><br>这个代码输出会如下面吗？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 0, 0</span></div><div class="line"><span class="comment">// 1, 2</span></div><div class="line"><span class="comment">// 2, 4</span></div><div class="line"><span class="comment">// 3, 6</span></div><div class="line"><span class="comment">// 4, 8</span></div><div class="line"><span class="comment">// 5, 10</span></div><div class="line"><span class="comment">// 6, 12</span></div></pre></td></tr></table></figure><br>答案: <strong>不是</strong><br>这个会造成一个死循环。<br>为什么会这样？<br>因为函数add内部引用了全局变量i,并在函数末尾给他赋值等于了2.<br>怎样去改善呢？ 有人说内部再申明一个变量k = i就好了。<br>其实我们有更好的办法<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) &#123;</div><div class="line">  &#123;</div><div class="line">    <span class="keyword">let</span> j = i;</div><div class="line">    <span class="built_in">console</span>.log(j, j * <span class="number">2</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="一点小魔法"><a href="#一点小魔法" class="headerlink" title="一点小魔法"></a>一点小魔法</h2><p>其实也不是什么魔法，就是一些小方法而已。<br>不过按照大神的说法，<strong>不建议使用这些方法</strong><br>因为，会<strong><em>导致性能严重下降</em></strong><br>但是我们还是会简单介绍一下，就简单的介绍一下。<br>就两个方法： <strong>eval</strong> 和 <strong>with</strong></p>
+<h3 id="eval函数"><a href="#eval函数" class="headerlink" title="eval函数"></a>eval函数</h3><p>它可以接受一个字符串为参数，并将其中的内容视成编写代码的时候就卸载这里一样运行它。<br>eval函数会动态的将你所传入的字符串在<strong>当前词法域</strong>中执行，并且当前词法域动态修改。<br>比如以下代码:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">ScopeFun</span>(<span class="params">evalStr, var1</span>) </span>&#123;</div><div class="line">    <span class="built_in">eval</span>(evalStr);</div><div class="line">    <span class="built_in">console</span>.log(evalVar, var1);</div><div class="line">&#125;</div><div class="line"></div><div class="line">ScopeFun(<span class="string">'var evalVar=1;'</span>, <span class="number">2</span>); <span class="comment">// 1, 2</span></div><div class="line"><span class="built_in">console</span>.log(evalVar); <span class="comment">// ReferenceError</span></div></pre></td></tr></table></figure></p>
+<p>但是在严格模式下，上面的代码输出又发生了改变。<br><blockquote><p>严格模式下，eval执行有自己专属的词法作用域.</p>
+</blockquote><br>测试下面代码:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">ScopeFun</span>(<span class="params">evalStr, var1</span>) </span>&#123;</div><div class="line"><span class="meta">    'use strict'</span>;</div><div class="line">    <span class="built_in">eval</span>(evalStr); <span class="comment">// 1</span></div><div class="line">    <span class="built_in">console</span>.log(evalVar, var1); <span class="comment">// ReferenceError</span></div><div class="line">&#125;</div><div class="line"></div><div class="line">ScopeFun(<span class="string">'var evalVar=1;console.log(evalVar);'</span>, <span class="number">2</span>); </div></pre></td></tr></table></figure><br>当然还有一些和eval差不多的方法。<br><blockquote><p>setTimeout 和 setInterval两个方法的第一个参数也可以是字符串。字符串内容可以被解释为一段动态生成的函数代码。</p>
+</blockquote></p>
+<h3 id="with方法"><a href="#with方法" class="headerlink" title="with方法"></a>with方法</h3><p>with通常被当作重复引用同一个对象中的多个属性的快捷方式，可以不需要重复引用对象本身。<br>就像是这样:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> person = &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">''</span>,</div><div class="line">    <span class="attr">sex</span>: <span class="string">''</span>,</div><div class="line">    <span class="attr">age</span>: <span class="string">''</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure><br>如果按照正常的方法，一般是按以下方式来赋值。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">person.name = <span class="string">'tom'</span>;</div><div class="line">person.sex  = <span class="string">'male'</span>;</div><div class="line">person.age  = <span class="string">'secret'</span>;</div></pre></td></tr></table></figure><br>这样虽然繁琐，但是很<strong>安全</strong>。<br>当然也可以这样:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">with</span>(person) &#123;</div><div class="line">     name = <span class="string">'tom'</span>;</div><div class="line">     sex  = <span class="string">'male'</span>;</div><div class="line">     age  = <span class="string">'secret'</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure><br>虽然with的确给我们在编写代码上带来了不少便利，但是其带来的隐患远远大于便利。<br>请看下面的代码:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> person = &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">''</span>,</div><div class="line">    <span class="attr">sex</span>: <span class="string">''</span>,</div><div class="line">    <span class="attr">age</span>: <span class="string">''</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">setWith</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">with</span>(person) &#123;</div><div class="line">      <span class="attr">name</span>: <span class="string">'tom'</span>;</div><div class="line">      weight: <span class="string">'61kg'</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(person); </div><div class="line"><span class="comment">/* person = &#123;</span></div><div class="line">    name: 'tom',</div><div class="line">    sex: '',</div><div class="line">    age: ''</div><div class="line">&#125;;</div><div class="line">*/</div></pre></td></tr></table></figure><br>这里输出的数据明显和我们设置的不一样, <strong><em>weight</em></strong>到哪里去了？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(weight); <span class="comment">// 61kg</span></div></pre></td></tr></table></figure><br><blockquote><p>with 可以将一个没有或有多个属性的对象处理为一个完全隔离的词法作用域， 因此这个对<br>象的属性也会被处理为定义在这个作用域中的词法标识符。</p>
+</blockquote><br>这个是意想不到的结果。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>javascript总是给我们带来很多精彩，但是也要小心其中的黑魔法。<br>如果善用不当，会造成意想不到的结果。<br>感谢你耐心看完本文。</p>
+<p>– End –</p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p><a href="http://www.ruanyifeng.com/blog/2013/01/javascript_strict_mode.html" target="_blank" rel="external">Javascript 严格模式详解</a><br><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="external">Javascript 类</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/作用域/" rel="tag"># 作用域</a>
+          
+            <a href="/tags/scope/" rel="tag"># scope</a>
+          
+            <a href="/tags/词法/" rel="tag"># 词法</a>
+          
+            <a href="/tags/规则/" rel="tag"># 规则</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/04/hello-again/" rel="next" title="Hello Again">
+                <i class="fa fa-chevron-left"></i> Hello Again
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Viger" />
+          <p class="site-author-name" itemprop="name">Viger</p>
+           
+              <p class="site-description motion-element" itemprop="description">个人博客-技术，心得相关</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#作用域是什么"><span class="nav-number">2.</span> <span class="nav-text">作用域是什么?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript的作用域"><span class="nav-number">3.</span> <span class="nav-text">Javascript的作用域</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#全局作用域"><span class="nav-number">3.1.</span> <span class="nav-text">全局作用域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数作用域"><span class="nav-number">3.2.</span> <span class="nav-text">函数作用域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类作用域"><span class="nav-number">3.3.</span> <span class="nav-text">类作用域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#块作用域"><span class="nav-number">3.4.</span> <span class="nav-text">块作用域</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一点小魔法"><span class="nav-number">4.</span> <span class="nav-text">一点小魔法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#eval函数"><span class="nav-number">4.1.</span> <span class="nav-text">eval函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#with方法"><span class="nav-number">4.2.</span> <span class="nav-text">with方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">6.</span> <span class="nav-text">附录</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Viger</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+    <script type="text/javascript">
+      var disqus_shortname = 'vigerchan';
+      var disqus_identifier = '2017/03/11/scope/';
+
+      var disqus_title = "我所理解的作用域(Javascript)";
+
+
+      function run_disqus_script(disqus_script) {
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      }
+
+      run_disqus_script('count.js');
+
+      
+        var disqus_config = function () {
+            this.page.url = disqus_url;
+            this.page.identifier = disqus_identifier;
+            this.page.title = disqus_title;
+        };
+        run_disqus_script('embed.js');
+      
+
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
